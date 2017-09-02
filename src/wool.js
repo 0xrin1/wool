@@ -30,5 +30,5 @@ server.bind(PORT);
 
 client.bind(() => {
     client.setBroadcast(true);
-    setInterval(broadcastNew, 3000);
+    broadcastNew();
 });
