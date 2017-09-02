@@ -4,7 +4,6 @@
   "description": "",
   "main": "src/wool.js",
   "scripts": {
-    "start": "node src/wool.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Martin Stuessy, Daniel Stuessy",
@@ -12,6 +11,8 @@
   "dependencies": {
     "async-foreach": "^0.1.3",
     "commander": "^2.11.0",
+    "ip": "^1.1.5",
+    "netmask": "^1.0.6",
     "simplebroadcast": "0.0.4"
   },
   "devDependencies": {

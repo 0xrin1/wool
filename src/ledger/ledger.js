@@ -1,34 +1,37 @@
 const dgram = require('dgram');
+const broadcast = require('../lib/broadcast');
 
-const server = dgram.createSocket('udp4');
-const client = dgram.createSocket('udp4');
-const PORT = 6024;
-const BROADCAST_ADDR = '192.168.1.255';
+class Ledger {
+    constructor() {
+        this.port = 6024;
+        this.addr = '192.168.1.255';
+        this.server = dgram.createSocket('udp4');
+        this.client = dgram.createSocket('udp4');
+    }
 
-function broadcastNew() {
-    const message = new Buffer('Broadcast message!');
-    client.send(message, 0, message.length, PORT, BROADCAST_ADDR, () => {
-        console.log(`Sent '${message}'`);
-    });
+    expectBroadcast() {
+        this.server.on('listening', () => {
+            const address = this.server.address();
+
+            console.log(`UDP Client listening on ${address.address}: ${address.port}`);
+        });
+
+        this.server.on('message', (message, rinfo) => {
+            console.log(`Message from: ${rinfo.address}: ${rinfo.port} - ${message}`);
+        });
+
+        this.server.bind(this.port);
+    }
+
+    sendBroadcast() {
+        this.client.bind(() => {
+            broadcast(this.client, {
+                message: "I'm here!",
+                port: this.port,
+                addr: this.addr,
+            });
+        });
+    }
 }
 
-// ---- server-side ----
-
-server.on('listening', () => {
-    const address = server.address();
-    console.log(`UDP Client listening on ${address.address}: ${address.port}`);
-    server.setBroadcast(true);
-});
-
-server.on('message', (message, rinfo) => {
-    console.log(`Message from: ${rinfo.address}: ${rinfo.port} - ${message}`);
-});
-
-server.bind(PORT);
-
-// ---- client-side ----
-
-client.bind(() => {
-    client.setBroadcast(true);
-    broadcastNew();
-});
+module.exports = Ledger;

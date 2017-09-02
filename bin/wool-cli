@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+const program = require('commander');
+const packageConf = require('../package.json');
+const Wool = require('../src/wool');
+
+program
+.version(packageConf.version)
+.option('--broadcast-port', 'set broadcast port for ledger')
+.option('--broadcast-addr', 'set broadcast address for ledger');
+
+program
+.command('start')
+.description('start the node: broadcast its existence and build ledger of other nodes')
+.action(() => {
+    const wool = new Wool();
+
+    wool.start();
+});
+
+program.parse(process.argv);
