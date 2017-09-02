@@ -1,48 +1,34 @@
-var async = require("async");
+const dgram = require('dgram');
 
-var io = require('socket.io')();
-io.on('connection', function(client){
-	console.log('client ' + client.id + ' connected to server');
-	client.emit('connectionInfo', client.id);
-});
-io.listen(3000);
+const server = dgram.createSocket('udp4');
+const client = dgram.createSocket('udp4');
+const PORT = 6024;
+const BROADCAST_ADDR = '192.168.1.255';
 
-var ipList = [];
-//3000 as test for connecting to itself for now
-for(var x = 1; x < 2; x++){
-	for(var y = 100; y <= 110; y++){
-		ipList.push('http://192.168.'+x+'.'+y+':3000');
-	}
+function broadcastNew() {
+    const message = new Buffer('Broadcast message!');
+    client.send(message, 0, message.length, PORT, BROADCAST_ADDR, () => {
+        console.log(`Sent '${message}'`);
+    });
 }
 
-var socketClient;
-async.each(ipList, function(file, callback) {
-	// Perform operation on file here.
-	console.log('checking ' + file);
-	socketClient = require('socket.io-client')(file);
-}, function(err) {
-	// if any of the file processing produced an error, err would equal that error
-	if( err ) {
-	// One of the iterations produced an error.
-	// All processing will now stop.
-		console.log('callback error');
-	} else {
-		console.log('callback success');
-	}
+// ---- server-side ----
+
+server.on('listening', () => {
+    const address = server.address();
+    console.log(`UDP Client listening on ${address.address}: ${address.port}`);
+    server.setBroadcast(true);
 });
 
-socketClient.on('connect_error', onError );
-function onError(message){
-	console.log('errorr message ' + message);
-}
-socketClient.on('connect', function(){
-	console.log('--------------------------');
-	console.log('client connected to server');
+server.on('message', (message, rinfo) => {
+    console.log(`Message from: ${rinfo.address}: ${rinfo.port} - ${message}`);
 });
-socketClient.on('connectionInfo', function(data){
-	console.log('client has received an event from the server');
-	console.log(data);
-});
-socketClient.on('disconnect', function(){
-	console.log('client server connection has disconnected');
+
+server.bind(PORT);
+
+// ---- client-side ----
+
+client.bind(() => {
+    client.setBroadcast(true);
+    setInterval(broadcastNew, 3000);
 });
