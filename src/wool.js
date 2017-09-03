@@ -7,21 +7,26 @@ module.exports = class Wool {
     constructor() {
         this.radioOperator = (new RadioOperator())
         .on('listening', Wool.onListening)
-        .on('greeting', this.onGreeting.bind(this))
+        .on('greeting:sent', Wool.onGreetingSent)
+        .on('greeting:received', this.onGreetingReceived.bind(this))
         .on('confirmation', this.onConfirmation.bind(this));
         this.ledger = [];
     }
 
     start() {
-        this.radioOperator.expectMessage();
-        this.radioOperator.sendGreeting();
+        this.radioOperator.listen();
+        this.radioOperator.greet();
     }
 
     static onListening(info) {
         winston.info(`listening to port ${info.port}\n`);
     }
 
-    onGreeting(info, message) {
+    static onGreetingSent(info) {
+        winston.info(`greeting broadcast to ${info.address}\n`);
+    }
+
+    onGreetingReceived(info, message) {
         winston.info('greeting received', message);
         this.ledger.push({
             address: info.address,

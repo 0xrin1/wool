@@ -20,7 +20,7 @@ class RadioOperator extends EventEmitter {
         });
     }
 
-    expectMessage() {
+    listen() {
         this.server.on('listening', () => {
             const info = this.server.address();
             this.eventEmitter.emit('listening', info);
@@ -30,7 +30,7 @@ class RadioOperator extends EventEmitter {
             const message = JSON.parse(messageBuffer.toString());
 
             if (message.type === 'greeting') {
-                this.eventEmitter.emit('greeting', info, message);
+                this.eventEmitter.emit('greeting:received', info, message);
                 this.confirm(info);
             }
 
@@ -55,14 +55,19 @@ class RadioOperator extends EventEmitter {
         });
     }
 
-    sendGreeting(cb = () => {}) {
+    greet() {
         this.client.bind(() => {
             udpMessage(this.client, {
                 broadcast: true,
                 message: this.greeting,
                 port: this.port,
                 addr: this.addr,
-            }, cb);
+            }, () => {
+                this.emit('greeting:sent', {
+                    address: this.addr,
+                    port: this.port,
+                }, this.greeting);
+            });
         });
     }
 }
