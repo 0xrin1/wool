@@ -1,7 +1,7 @@
 
 root = true
 
-[*.{es,js,md,html,scss,css}]
+[{*.{es,js,md,html,scss,css}, bin/wool-cli}]
 charset = utf-8
 indent_style = space
 indent_size = 4
