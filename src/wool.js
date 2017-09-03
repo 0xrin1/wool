@@ -1,15 +1,18 @@
+const EventEmitter = require('./event-emitter/event-emitter');
 const RadioOperator = require('./radio-operator/radio-operator');
 const winston = require('winston');
 
 winston.add(winston.transports.File, { filename: `logs/${(new Date()).toISOString()}` });
 
-module.exports = class Wool {
+module.exports = class Wool extends EventEmitter {
     constructor() {
+        super();
+
         this.radioOperator = (new RadioOperator())
-        .on('listening', Wool.onListening)
-        .on('greeting:sent', Wool.onGreetingSent)
+        .on('listening', this.onListening.bind(this))
+        .on('greeting:sent', this.onGreetingSent.bind(this))
         .on('greeting:received', this.onGreetingReceived.bind(this))
-        .on('confirmation', this.onConfirmation.bind(this));
+        .on('confirmation:received', this.onConfirmationReceived.bind(this));
         this.ledger = new Map();
     }
 
@@ -18,12 +21,14 @@ module.exports = class Wool {
         this.radioOperator.greet();
     }
 
-    static onListening(info) {
-        winston.info(`listening to port ${info.port}\n`);
+    onListening(info) {
+        winston.info(`Wool: listening to port ${info.port}\n`);
+        this.emit('listening', info);
     }
 
-    static onGreetingSent(info) {
-        winston.info(`greeting broadcast to ${info.address}\n`);
+    onGreetingSent(info) {
+        winston.info(`greeting sent to ${info.address}\n`);
+        this.emit('greeting:sent', info);
     }
 
     onGreetingReceived(info, message) {
@@ -32,13 +37,15 @@ module.exports = class Wool {
             address: info.address,
         });
         winston.info('ledger', this.ledger, '\n');
+        this.emit('greeting:received', info, message);
     }
 
-    onConfirmation(info, message) {
+    onConfirmationReceived(info, message) {
         winston.info('confirmation received', message);
         this.ledger.set(info.address, {
             address: info.address,
         });
         winston.info('ledger', this.ledger, '\n');
+        this.emit('confirmation:received', info, message);
     }
 };
