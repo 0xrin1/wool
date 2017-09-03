@@ -11,7 +11,7 @@ class RadioPresenter {
             type: 'greeting',
             message: 'Hello world!',
         });
-        this.reply = JSON.stringify({
+        this.confirmation = JSON.stringify({
             type: 'confirmation',
             message: 'Hello dude!',
         });
@@ -36,7 +36,7 @@ class RadioPresenter {
                 onGreeting(info, message);
                 udpMessage(this.client, {
                     broadcast: false,
-                    message: this.reply,
+                    message: this.confirmation,
                     port: this.port,
                     addr: info.address,
                 }, (err) => {
