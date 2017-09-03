@@ -5,16 +5,15 @@ winston.add(winston.transports.File, { filename: `logs/${(new Date()).toISOStrin
 
 module.exports = class Wool {
     constructor() {
-        this.radioOperator = new RadioOperator();
+        this.radioOperator = (new RadioOperator())
+        .on('listening', Wool.onListening)
+        .on('greeting', this.onGreeting.bind(this))
+        .on('confirmation', this.onConfirmation.bind(this));
         this.ledger = [];
     }
 
     start() {
-        this.radioOperator.expectMessage({
-            listeningStarted: Wool.onListening,
-            onGreeting: this.onGreeting.bind(this),
-            onConfirmation: this.onConfirmation.bind(this),
-        });
+        this.radioOperator.expectMessage();
         this.radioOperator.sendGreeting();
     }
 

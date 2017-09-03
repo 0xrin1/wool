@@ -1,8 +1,11 @@
+const EventEmitter = require('../event-emitter/event-emitter');
 const dgram = require('dgram');
 const udpMessage = require('../lib/udp-message');
 
-class RadioOperator {
+class RadioOperator extends EventEmitter {
     constructor() {
+        super();
+
         this.port = 6024;
         this.addr = '192.168.1.255';
         this.server = dgram.createSocket('udp4');
@@ -17,41 +20,39 @@ class RadioOperator {
         });
     }
 
-    expectMessage(options = {}) {
-        const {
-            listeningStarted,
-            onGreeting,
-            onConfirmation,
-        } = options;
-
+    expectMessage() {
         this.server.on('listening', () => {
             const info = this.server.address();
-            listeningStarted(info);
+            this.eventEmitter.emit('listening', info);
         });
 
         this.server.on('message', (messageBuffer, info) => {
             const message = JSON.parse(messageBuffer.toString());
 
             if (message.type === 'greeting') {
-                onGreeting(info, message);
-                udpMessage(this.client, {
-                    broadcast: false,
-                    message: this.confirmation,
-                    port: this.port,
-                    addr: info.address,
-                }, (err) => {
-                    if (err) {
-                        throw Error(err.message);
-                    }
-                });
+                this.eventEmitter.emit('greeting', info, message);
+                this.confirm(info);
             }
 
             if (message.type === 'confirmation') {
-                onConfirmation(info, message);
+                this.eventEmitter.emit('confirmation', info);
             }
         });
 
         this.server.bind(this.port);
+    }
+
+    confirm(info) {
+        udpMessage(this.client, {
+            broadcast: false,
+            message: this.confirmation,
+            port: this.port,
+            addr: info.address,
+        }, (err) => {
+            if (err) {
+                throw Error(err.message);
+            }
+        });
     }
 
     sendGreeting(cb = () => {}) {
