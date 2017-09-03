@@ -1,21 +1,21 @@
-const RadioPresenter = require('./radio-presenter/radio-presenter');
+const RadioOperator = require('./radio-operator/radio-operator');
 const winston = require('winston');
 
 winston.add(winston.transports.File, { filename: `logs/${(new Date()).toISOString()}` });
 
 module.exports = class Wool {
     constructor() {
-        this.radioPresenter = new RadioPresenter();
+        this.radioOperator = new RadioOperator();
         this.ledger = [];
     }
 
     start() {
-        this.radioPresenter.expectMessage({
+        this.radioOperator.expectMessage({
             listeningStarted: Wool.onListening,
             onGreeting: this.onGreeting.bind(this),
             onConfirmation: this.onConfirmation.bind(this),
         });
-        this.radioPresenter.sendBroadcast();
+        this.radioOperator.sendGreeting();
     }
 
     static onListening(info) {

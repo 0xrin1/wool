@@ -1,7 +1,7 @@
 const dgram = require('dgram');
 const udpMessage = require('../lib/udp-message');
 
-class RadioPresenter {
+class RadioOperator {
     constructor() {
         this.port = 6024;
         this.addr = '192.168.1.255';
@@ -54,7 +54,7 @@ class RadioPresenter {
         this.server.bind(this.port);
     }
 
-    sendBroadcast(cb = () => {}) {
+    sendGreeting(cb = () => {}) {
         this.client.bind(() => {
             udpMessage(this.client, {
                 broadcast: true,
@@ -66,4 +66,4 @@ class RadioPresenter {
     }
 }
 
-module.exports = RadioPresenter;
+module.exports = RadioOperator;
