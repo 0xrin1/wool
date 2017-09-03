@@ -1,7 +1,7 @@
 const RadioPresenter = require('./radio-presenter/radio-presenter');
 const winston = require('winston');
 
-winston.add(winston.transports.File, { filename: `logs/${(new Date()).toISOString()}` })
+winston.add(winston.transports.File, { filename: `logs/${(new Date()).toISOString()}` });
 
 module.exports = class Wool {
     constructor() {
