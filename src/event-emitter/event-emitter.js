@@ -1,4 +1,5 @@
-const EE = require('eventemitter3');
+const EE = require('events');
+
 
 module.exports = class EventEmitter {
     constructor() {
@@ -6,7 +7,7 @@ module.exports = class EventEmitter {
     }
 
     on(eventName, cb) {
-        this.eventEmitter.on(eventName, cb, this);
+        this.eventEmitter.on(eventName, cb.bind(this));
         return this;
     }
 
