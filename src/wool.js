@@ -1,4 +1,5 @@
 const RadioPresenter = require('./radio-presenter/radio-presenter');
+const winston = require('winston');
 
 module.exports = class Wool {
     constructor() {
@@ -8,7 +9,7 @@ module.exports = class Wool {
 
     start() {
         this.radioPresenter.expectMessage({
-            listeningStarted: (info) => { console.log(`listening to port ${info.port}\n`); },
+            listeningStarted: (info) => { winston.info(`listening to port ${info.port}\n`); },
             onGreeting: this.onGreeting.bind(this),
             onConfirmation: this.onConfirmation.bind(this),
         });
@@ -16,20 +17,18 @@ module.exports = class Wool {
     }
 
     onGreeting(info, message) {
-        console.log('greeting received', message);
+        winston.info('greeting received', message);
         this.ledger.push({
             address: info.address,
         });
-        console.log('ledger', this.ledger);
-        console.log('');
+        winston.info('ledger', this.ledger, '\n');
     }
 
     onConfirmation(info, message) {
-        console.log('confirmation received', message);
+        winston.info('confirmation received', message);
         this.ledger.push({
             address: info.address,
         });
-        console.log('ledger', this.ledger);
-        console.log('');
+        winston.info('ledger', this.ledger, '\n');
     }
 };
