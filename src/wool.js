@@ -10,7 +10,7 @@ module.exports = class Wool {
         .on('greeting:sent', Wool.onGreetingSent)
         .on('greeting:received', this.onGreetingReceived.bind(this))
         .on('confirmation', this.onConfirmation.bind(this));
-        this.ledger = [];
+        this.ledger = new Map();
     }
 
     start() {
@@ -28,7 +28,7 @@ module.exports = class Wool {
 
     onGreetingReceived(info, message) {
         winston.info('greeting received', message);
-        this.ledger.push({
+        this.ledger.set(info.address, {
             address: info.address,
         });
         winston.info('ledger', this.ledger, '\n');
@@ -36,7 +36,7 @@ module.exports = class Wool {
 
     onConfirmation(info, message) {
         winston.info('confirmation received', message);
-        this.ledger.push({
+        this.ledger.set(info.address, {
             address: info.address,
         });
         winston.info('ledger', this.ledger, '\n');
