@@ -23,19 +23,19 @@ class RadioOperator extends EventEmitter {
     listen() {
         this.server.on('listening', () => {
             const info = this.server.address();
-            this.eventEmitter.emit('listening', info);
+            this.emit('listening', info);
         });
 
         this.server.on('message', (messageBuffer, info) => {
             const message = JSON.parse(messageBuffer.toString());
 
             if (message.type === 'greeting') {
-                this.eventEmitter.emit('greeting:received', info, message);
+                this.emit('greeting:received', info, message);
                 this.confirm(info);
             }
 
             if (message.type === 'confirmation') {
-                this.eventEmitter.emit('confirmation', info);
+                this.emit('confirmation:received', info);
             }
         });
 
