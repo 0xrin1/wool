@@ -8,7 +8,11 @@ module.exports = class Wool extends EventEmitter {
     constructor() {
         super();
 
-        this.radioOperator = (new RadioOperator())
+        this.module = {
+            name: 'wool',
+            traits: [],
+        };
+        this.radioOperator = (new RadioOperator(this.module))
         .on('listening', this.onListening.bind(this))
         .on('greeting:sent', this.onGreetingSent.bind(this))
         .on('greeting:received', this.onGreetingReceived.bind(this))
@@ -33,18 +37,14 @@ module.exports = class Wool extends EventEmitter {
 
     onGreetingReceived(info, message) {
         winston.info('greeting received', message);
-        this.ledger.set(info.address, {
-            address: info.address,
-        });
+        this.ledger.set(info.address, message);
         winston.info('ledger', this.ledger, '\n');
         this.emit('greeting:received', info, message);
     }
 
     onConfirmationReceived(info, message) {
         winston.info('confirmation received', message);
-        this.ledger.set(info.address, {
-            address: info.address,
-        });
+        this.ledger.set(info.address, message);
         winston.info('ledger', this.ledger, '\n');
         this.emit('confirmation:received', info, message);
     }

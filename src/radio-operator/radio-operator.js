@@ -1,9 +1,10 @@
-const EventEmitter = require('../event-emitter/event-emitter');
+const os = require('os');
 const dgram = require('dgram');
+const EventEmitter = require('../event-emitter/event-emitter');
 const udpMessage = require('../lib/udp-message');
 
 class RadioOperator extends EventEmitter {
-    constructor() {
+    constructor(module) {
         super();
 
         this.port = 6024;
@@ -12,11 +13,17 @@ class RadioOperator extends EventEmitter {
         this.client = dgram.createSocket('udp4');
         this.greeting = JSON.stringify({
             type: 'greeting',
-            message: 'Hello world!',
+            name: os.hostname(),
+            body: {
+                module,
+            },
         });
         this.confirmation = JSON.stringify({
             type: 'confirmation',
-            message: 'Hello dude!',
+            name: os.hostname(),
+            body: {
+                module,
+            },
         });
     }
 
@@ -35,7 +42,7 @@ class RadioOperator extends EventEmitter {
             }
 
             if (message.type === 'confirmation') {
-                this.emit('confirmation:received', info);
+                this.emit('confirmation:received', info, message);
             }
         });
 
