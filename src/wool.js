@@ -25,6 +25,10 @@ module.exports = class Wool extends EventEmitter {
         this.radioOperator.greet();
     }
 
+    message(target, data, callback, options = {}) {
+        this.radioOperator.message(target, data, callback, options);
+    }
+
     onListening(info) {
         winston.info(`Wool: listening to port ${info.port}\n`);
         this.emit('listening', info);

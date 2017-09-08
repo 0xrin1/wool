@@ -2,8 +2,10 @@ const os = require('os');
 const dgram = require('dgram');
 const EventEmitter = require('../event-emitter/event-emitter');
 const udpMessage = require('../lib/udp-message');
+const clone = require('../lib/clone');
+const assign = require('../lib/assign');
 
-class RadioOperator extends EventEmitter {
+module.exports = class RadioOperator extends EventEmitter {
     constructor(module) {
         super();
 
@@ -25,6 +27,11 @@ class RadioOperator extends EventEmitter {
                 module,
             },
         });
+        this.msg = {
+            type: 'message',
+            name: os.hostname(),
+            body: null,
+        };
     }
 
     listen() {
@@ -47,6 +54,37 @@ class RadioOperator extends EventEmitter {
         });
 
         this.server.bind(this.port);
+    }
+
+    message(target, data, callback, options = {}) {
+        const {
+            port = this.port,
+            address,
+        } = target;
+        const {
+            broadcast = false,
+        } = options;
+        const message = JSON.stringify(assign(clone(this.msg), 'body', data));
+
+        if (!address) {
+            throw Error('Wool: No address specified');
+        }
+
+        if (!message) {
+            throw Error('Wool: No message provided');
+        }
+
+        udpMessage(this.client, {
+            broadcast,
+            message,
+            port,
+            address,
+        }, (err) => {
+            if (err) {
+                throw Error(err.message);
+            }
+            callback();
+        });
     }
 
     confirm(info) {
@@ -77,6 +115,4 @@ class RadioOperator extends EventEmitter {
             });
         });
     }
-}
-
-module.exports = RadioOperator;
+};
