@@ -7,7 +7,7 @@ Decentralized intranet for applications relating to IoT.
 Follow the steps below to see usage information. Each approach will display
 the help output.
 
-### UNIX
+### \*NIX
 
 Execute the cli command in `/bin/wool-cli` as it is; it will be executed with
 node by the OS automatically:
