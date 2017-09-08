@@ -43,20 +43,24 @@ module.exports = class RadioOperator extends EventEmitter {
         this.server.on('message', (messageBuffer, info) => {
             const message = JSON.parse(messageBuffer.toString());
 
-            if (message.type === 'greeting') {
+            switch (message.type) {
+            case 'greeting':
                 this.emit('greeting:received', info, message);
                 this.confirm(info);
-            }
-
-            if (message.type === 'confirmation') {
+                break;
+            case 'confirmation':
                 this.emit('confirmation:received', info, message);
+                break;
+            default:
+                this.emit('message:received', info, message);
+                break;
             }
         });
 
         this.server.bind(this.port);
     }
 
-    message(target, data, callback, options = {}) {
+    message(target, data, callback = () => {}, options = {}) {
         const {
             port = this.port,
             address,

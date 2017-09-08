@@ -2,7 +2,7 @@ const chai = require('chai');
 const Wool = require('../src/wool');
 
 describe('wool', () => {
-    describe('wool.message', () => {
+    describe('.message', () => {
         const wool = new Wool();
 
         before(() => {
@@ -24,6 +24,20 @@ describe('wool', () => {
             const options = {};
 
             wool.message(target, data, callback, options);
+        });
+
+        it('listens to messages', (done) => {
+            const messageBody = 'awesome';
+            const callback = (info, message) => {
+                chai.expect(message.body).to.equal(messageBody);
+                done();
+            };
+            const target = {
+                address: '127.0.0.1',
+            };
+
+            wool.on('message:received', callback);
+            wool.message(target, messageBody);
         });
     });
 });

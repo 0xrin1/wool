@@ -16,7 +16,8 @@ module.exports = class Wool extends EventEmitter {
         .on('listening', this.onListening.bind(this))
         .on('greeting:sent', this.onGreetingSent.bind(this))
         .on('greeting:received', this.onGreetingReceived.bind(this))
-        .on('confirmation:received', this.onConfirmationReceived.bind(this));
+        .on('confirmation:received', this.onConfirmationReceived.bind(this))
+        .on('message:received', this.onMessageReceived.bind(this));
         this.ledger = new Map();
     }
 
@@ -32,6 +33,11 @@ module.exports = class Wool extends EventEmitter {
     onListening(info) {
         winston.info(`Wool: listening to port ${info.port}\n`);
         this.emit('listening', info);
+    }
+
+    onMessageReceived(info, message) {
+        winston.info(`Wool: message received from ${info.address}:${info.port}: ${message}`);
+        this.emit('message:received', info, message);
     }
 
     onGreetingSent(info) {
