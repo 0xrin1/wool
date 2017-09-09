@@ -32,6 +32,12 @@ module.exports = class RadioOperator extends EventEmitter {
             name: os.hostname(),
             body: null,
         };
+        this.echoMsg = {
+            type: 'echo',
+            name: os.hostname(),
+            body: null,
+        };
+        this.pendingEchoes = new Set();
     }
 
     listen() {
@@ -45,14 +51,16 @@ module.exports = class RadioOperator extends EventEmitter {
 
             switch (message.type) {
             case 'greeting':
-                this.emit('greeting:received', info, message);
-                this.confirm(info);
+                this.onGreetingReceived(info, message);
                 break;
             case 'confirmation':
-                this.emit('confirmation:received', info, message);
+                this.onConfirmationReceived(info, message);
+                break;
+            case 'echo':
+                this.onEchoReceived(info, message);
                 break;
             default:
-                this.emit('message:received', info, message);
+                this.onMessageReceived(info, message);
                 break;
             }
         });
@@ -60,9 +68,39 @@ module.exports = class RadioOperator extends EventEmitter {
         this.server.bind(this.port);
     }
 
-    message(target, data, callback = () => {}, options = {}) {
+    onGreetingReceived(info, message) {
+        this.emit('greeting:received', info, message);
+        this.confirm(info);
+    }
+
+    onConfirmationReceived(info, message) {
+        this.emit('confirmation:received', info, message);
+    }
+
+    onEchoReceived(info, message) {
+        this.emit('echo:received', info, message);
+        this.pendingEchoes.delete(message.body.id);
+    }
+
+    onEchoLost(info, message) {
+        this.emit('echo:lost', info, message);
+    }
+
+    onMessageSent(info, message) {
+        const echoId = Date.now() + Math.random();
+        this.pendingEchoes.add(echoId);
+
+        this.emit('message:sent', info, message);
+        this.echoTimeout(echoId, info, message);
+    }
+
+    onMessageReceived(info, message) {
+        this.emit('message:received', info, message);
+        this.echo(info, message);
+    }
+
+    message(target, data, callback, options = {}) {
         const {
-            port = this.port,
             address,
         } = target;
         const {
@@ -81,13 +119,38 @@ module.exports = class RadioOperator extends EventEmitter {
         udpMessage(this.client, {
             broadcast,
             message,
-            port,
+            port: this.port,
             address,
         }, (err) => {
             if (err) {
                 throw Error(err.message);
             }
+            this.onMessageSent(target, message);
             callback();
+        });
+    }
+
+    echoTimeout(id, target, message) {
+        setTimeout(() => {
+            if (this.pendingEchoes.has(id)) {
+                this.onEchoLost(target, message);
+            }
+        }, 1000);
+    }
+
+    echo(info, message) {
+        const msg = assign(clone(this.echoMsg), 'body', message.body);
+
+        udpMessage(this.client, {
+            address: info.address,
+            port: this.port,
+            broadcast: false,
+            message: JSON.stringify(msg),
+        }, (err) => {
+            if (err) {
+                throw Error(err);
+            }
+            this.emit('echo:sent', info, msg);
         });
     }
 

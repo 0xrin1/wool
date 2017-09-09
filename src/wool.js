@@ -17,7 +17,10 @@ module.exports = class Wool extends EventEmitter {
         .on('greeting:sent', this.onGreetingSent.bind(this))
         .on('greeting:received', this.onGreetingReceived.bind(this))
         .on('confirmation:received', this.onConfirmationReceived.bind(this))
-        .on('message:received', this.onMessageReceived.bind(this));
+        .on('message:received', this.onMessageReceived.bind(this))
+        .on('echo:sent', this.onEchoSent.bind(this))
+        .on('echo:received', this.onEchoReceived.bind(this))
+        .on('echo:lost', this.onEchoLost.bind(this));
         this.ledger = new Map();
     }
 
@@ -26,7 +29,8 @@ module.exports = class Wool extends EventEmitter {
         this.radioOperator.greet();
     }
 
-    message(target, data, callback, options = {}) {
+    message(target, data, callback = () => {}, options = {}) {
+        winston.info(`Wool: sending message to ${target.address}:${this.radioOperator.port}`);
         this.radioOperator.message(target, data, callback, options);
     }
 
@@ -38,6 +42,22 @@ module.exports = class Wool extends EventEmitter {
     onMessageReceived(info, message) {
         winston.info(`Wool: message received from ${info.address}:${info.port}: ${message}`);
         this.emit('message:received', info, message);
+    }
+
+    onEchoReceived(info, message) {
+        winston.info(`Wool: echo received from ${info.address}:${info.port}: ${message}`);
+        this.emit('echo:received', info, message);
+    }
+
+    onEchoLost(info, message) {
+        winston.info(`Wool: echo lost from ${info.address}:${info.port}: ${message}`);
+        delete this.ledger[info.address];
+        this.emit('echo:lost', info, message);
+    }
+
+    onEchoSent(info, message) {
+        winston.info(`Wool: echo sent to ${info.address}:${info.port}: ${message}`);
+        this.emit('echo:sent', info, message);
     }
 
     onGreetingSent(info) {
