@@ -8,7 +8,7 @@ module.exports = function udpMessage(client, options = {}, callback) {
     } = options;
 
     if (!message) {
-        throw Error('UDP message: message of type falsy cannot be sent');
+        throw Error('Wool UDP message: message of type falsy cannot be sent');
     }
 
     const messageBuffer = new Buffer(message);
